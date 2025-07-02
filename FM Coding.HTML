@@ -217,6 +217,13 @@
       const categoryDiv = document.getElementById('category-summary');
       summaryDiv.innerHTML = '';
       categoryDiv.innerHTML = '';
+
+      const taxRate = parseFloat(document.getElementById('globalTax').value);
+      if (isNaN(taxRate)) {
+        alert("Please select a Sales Tax Area first.");
+        return;
+      }
+
       let categoryTotals = {};
       let subtotal = 0, totalTax = 0, shipping = parseFloat(document.getElementById('shipping').value) || 0;
 
@@ -227,20 +234,24 @@
         const price = parseFloat(document.getElementById(`price-${i}`).value) || 0;
         const discount = parseFloat(document.getElementById(`discount-${i}`).value) || 0;
         const lineTotal = (qty * price) - discount;
-        subtotal += lineTotal;
+        const tax = lineTotal * (taxRate / 100);
+        const total = lineTotal + tax;
 
-        summaryDiv.innerHTML += `<p><strong>${category}</strong><br>Description: ${desc || 'N/A'}<br>Qty: ${qty}, Unit Price: $${price.toFixed(2)}, Discount: $${discount.toFixed(2)}, Total: $${lineTotal.toFixed(2)}</p>`;
+        subtotal += lineTotal;
+        totalTax += tax;
+
+        summaryDiv.innerHTML += `<p><strong>${category}</strong><br>Description: ${desc || 'N/A'}<br>Qty: ${qty}, Unit Price: $${price.toFixed(2)}, Discount: $${discount.toFixed(2)}, Tax: $${tax.toFixed(2)}, Total: $${total.toFixed(2)}</p>`;
 
         if (!categoryTotals[category]) categoryTotals[category] = 0;
-        categoryTotals[category] += lineTotal;
+        categoryTotals[category] += total;
       }
 
       for (let cat in categoryTotals) {
         categoryDiv.innerHTML += `<p>${cat}: $${categoryTotals[cat].toFixed(2)}</p>`;
       }
 
-      const grandTotal = subtotal + shipping;
-      document.getElementById('order-totals').innerHTML = `<p>Subtotal: $${subtotal.toFixed(2)}</p><p>Shipping: $${shipping.toFixed(2)}</p><hr><p>Grand Total: $${grandTotal.toFixed(2)}</p>`;
+      const grandTotal = subtotal + totalTax + shipping;
+      document.getElementById('order-totals').innerHTML = `<p>Subtotal: $${subtotal.toFixed(2)}</p><p>Tax: $${totalTax.toFixed(2)}</p><p>Shipping: $${shipping.toFixed(2)}</p><hr><p>Grand Total: $${grandTotal.toFixed(2)}</p>`;
       document.getElementById('summary').style.display = 'block';
     }
 
