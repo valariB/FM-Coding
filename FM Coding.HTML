@@ -149,6 +149,11 @@
   <script>
     let itemIndex = 0;
 
+    function toggleItem(index) {
+      const body = document.getElementById(`body-${index}`);
+      body.style.display = (body.style.display === "none" || body.style.display === "") ? "block" : "none";
+    }
+
     function addItem() {
       const container = document.getElementById('items-container');
       const div = document.createElement('div');
@@ -196,12 +201,62 @@
           <input type="number" id="price-${itemIndex}" step="0.01" />
           <label>Discount (flat $ amount total for all units)</label>
           <input type="number" id="discount-${itemIndex}" step="0.01" value="0" />
-          <label>Class (optional)</label>
-          <input type="text" id="class-${itemIndex}" />
         </div>`;
       container.appendChild(div);
       itemIndex++;
     }
+
+    function updateHeader(index) {
+      const category = document.getElementById(`category-${index}`).value;
+      const header = document.getElementById(`header-${index}`);
+      header.innerText = `Item ${index + 1} — ${category}`;
+    }
+
+    function calculateSummary() {
+      const summaryDiv = document.getElementById('summary-content');
+      const categoryDiv = document.getElementById('category-summary');
+      summaryDiv.innerHTML = '';
+      categoryDiv.innerHTML = '';
+      let categoryTotals = {};
+      let subtotal = 0, totalTax = 0, shipping = parseFloat(document.getElementById('shipping').value) || 0;
+
+      for (let i = 0; i < itemIndex; i++) {
+        const category = document.getElementById(`category-${i}`).value;
+        const desc = document.getElementById(`description-${i}`).value;
+        const qty = parseInt(document.getElementById(`qty-${i}`).value) || 0;
+        const price = parseFloat(document.getElementById(`price-${i}`).value) || 0;
+        const discount = parseFloat(document.getElementById(`discount-${i}`).value) || 0;
+        const lineTotal = (qty * price) - discount;
+        subtotal += lineTotal;
+
+        summaryDiv.innerHTML += `<p><strong>${category}</strong><br>Description: ${desc || 'N/A'}<br>Qty: ${qty}, Unit Price: $${price.toFixed(2)}, Discount: $${discount.toFixed(2)}, Total: $${lineTotal.toFixed(2)}</p>`;
+
+        if (!categoryTotals[category]) categoryTotals[category] = 0;
+        categoryTotals[category] += lineTotal;
+      }
+
+      for (let cat in categoryTotals) {
+        categoryDiv.innerHTML += `<p>${cat}: $${categoryTotals[cat].toFixed(2)}</p>`;
+      }
+
+      const grandTotal = subtotal + shipping;
+      document.getElementById('order-totals').innerHTML = `<p>Subtotal: $${subtotal.toFixed(2)}</p><p>Shipping: $${shipping.toFixed(2)}</p><hr><p>Grand Total: $${grandTotal.toFixed(2)}</p>`;
+      document.getElementById('summary').style.display = 'block';
+    }
+
+    function applyShipping() {
+      calculateSummary();
+    }
+
+    function resetCalculator() {
+      document.getElementById('items-container').innerHTML = '';
+      document.getElementById('summary').style.display = 'none';
+      document.getElementById('shipping').value = '';
+      itemIndex = 0;
+      addItem();
+    }
+
+    window.onload = addItem;
   </script>
 </body>
 </html>
