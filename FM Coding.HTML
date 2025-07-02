@@ -225,11 +225,12 @@
       }
 
       let categoryTotals = {};
+      let categoryDescriptions = {};
       let subtotal = 0, totalTax = 0, shipping = parseFloat(document.getElementById('shipping').value) || 0;
 
       for (let i = 0; i < itemIndex; i++) {
         const category = document.getElementById(`category-${i}`).value;
-        const desc = document.getElementById(`description-${i}`).value;
+        const desc = document.getElementById(`description-${i}`).value.trim();
         const qty = parseInt(document.getElementById(`qty-${i}`).value) || 0;
         const price = parseFloat(document.getElementById(`price-${i}`).value) || 0;
         const discount = parseFloat(document.getElementById(`discount-${i}`).value) || 0;
@@ -242,12 +243,17 @@
 
         summaryDiv.innerHTML += `<p><strong>${category}</strong><br>Description: ${desc || 'N/A'}<br>Qty: ${qty}, Unit Price: $${price.toFixed(2)}, Discount: $${discount.toFixed(2)}, Tax: $${tax.toFixed(2)}, Total: $${total.toFixed(2)}</p>`;
 
-        if (!categoryTotals[category]) categoryTotals[category] = 0;
+        if (!categoryTotals[category]) {
+          categoryTotals[category] = 0;
+          categoryDescriptions[category] = [];
+        }
         categoryTotals[category] += total;
+        if (desc) categoryDescriptions[category].push(desc);
       }
 
       for (let cat in categoryTotals) {
-        categoryDiv.innerHTML += `<p>${cat}: $${categoryTotals[cat].toFixed(2)}</p>`;
+        const descList = categoryDescriptions[cat].join(', ');
+        categoryDiv.innerHTML += `<p>${cat}: $${categoryTotals[cat].toFixed(2)}<br><em>Descriptions:</em> ${descList}</p>`;
       }
 
       const grandTotal = subtotal + totalTax + shipping;
